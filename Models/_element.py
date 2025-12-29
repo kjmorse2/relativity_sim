@@ -9,7 +9,6 @@ class _Element:
         :param y: the initial y position
         :param vx: the initial x velocity
         :param vy: the initial y velocity
-        :param mass: the mass of the object
         """
         self.__position = Point2D(x, y)
         self.__velocity = vector.obj(x = vx, y = vy)

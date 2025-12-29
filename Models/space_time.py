@@ -1,20 +1,14 @@
-from Models.particle import Particle
-from Models.mass import Mass
 from vector import Vector2D
+from .mass import Mass
 
 class SpaceTime:
+    Gravitational_Constant : float = 6.67408e-11 # m^3 kg^-1 s^-2
+    C : float = 299,792,458
     def __init__(self, size_x : float , size_y : float):
-        self.__particles : list[Particle] = []
         self.__masses : list[Mass] = []
         self.__size_x : float = size_x
         self.__size_y : float = size_y
         self.__age : float = 0
-
-    def add_point(self, x: float, y: float, vx: float, vy: float) -> Particle:
-        velocity = Vector2D(x = vx, y = vy)
-        particle = Particle(x, y, vx, vy)
-        self.__particles.append(particle)
-        return particle
 
     def add_mass(self, x: float, y: float, vx: float, vy: float, mass: float) -> Mass:
         velocity = Vector2D(x = vx, y = vy)
@@ -23,19 +17,14 @@ class SpaceTime:
         return mass
 
     def update(self, dt: float):
-        for particle in self.__particles:
-            particle.update(dt)
         for mass in self.__masses:
-            mass.update(dt)
-
-    def get_particles(self) -> list[Particle]:
-        return self.__particles
+            mass.time_step(dt)
 
     @property
-    def size_x(self) -> int:
+    def size_x(self) -> float:
         return self.__size_x
 
     @property
-    def size_y(self) -> int:
+    def size_y(self) -> float:
         return self.__size_y
 

@@ -1,6 +1,6 @@
-from Models._element import _Element
 from vector import Vector2D
-
+from .space_time import SpaceTime
+from ._element import _Element
 
 class Mass(_Element):
     """
@@ -10,14 +10,20 @@ class Mass(_Element):
     def __init__(self, x: float, y: float, vx : float, vy : float, mass: float):
         """
         Constructs a Mass object
-        :param x: the Masses x coordinate (kilometers)
-        :param y: the Masses y coordinate (kilometers)
-        :param vx : the x velocity of the mass
-        :param vy: the y velocity of the mass
         :param mass: the mass of the Mass (kg)
         """
         super().__init__(x, y, vx, vy)
         self.__mass = mass
+        self.__total_gravitational_potential = 0
+
+    def apply_gravity(self, masses : list["Mass"]):
+        self.__total_gravitational_potential = 0
+        for mass in masses:
+            self._add_gravitational_potential(mass)
+
+    def _add_gravitational_potential(self, other : "Mass"):
+        potential = -1 * ((SpaceTime.Gravitational_Constant * other.mass ) / self.distance_from(other))
+        self.__total_gravitational_potential += potential
 
     @property
     def mass(self) -> float:

@@ -1,59 +1,90 @@
-import vector
-from Models.point2d import Point2D
+from __future__ import annotations
+
+from Coordinates.spherical_point import SphericalPoint
+from Coordinates.spherical_velocity import SphericalVelocity
+
 
 class _Element:
-    def __init__(self, x: float, y: float, vx : float, vy : float):
+    def __init__(self, x: float, y: float, z: float, vx: float, vy: float, vz: float):
         """
-        Initialize a Mass object.
-        :param x: the initial x position
-        :param y: the initial y position
-        :param vx: the initial x velocity
-        :param vy: the initial y velocity
+        Initialize an Element object from Cartesian coordinates.
+        Internally stores position and velocity in spherical coordinates.
+        :param x: the initial x position (Cartesian)
+        :param y: the initial y position (Cartesian)
+        :param z: the initial z position (Cartesian)
+        :param vx: the initial x velocity (Cartesian)
+        :param vy: the initial y velocity (Cartesian)
+        :param vz: the initial z velocity (Cartesian)
         """
-        self.__position = Point2D(x, y)
-        self.__velocity = vector.obj(x = vx, y = vy)
-        self.__age = 0.0
+        self.position = SphericalPoint(x, y, z)
+        self._velocity = SphericalVelocity.from_cartesian(vx, vy, vz, self.position)
+        self._age = 0.0
 
     def time_step(self, dt: float):
         """
-        Update the Mass's position based on its velocity and the time delta.
+        Update the Element's position based on its velocity and the time delta.
+        Uses spherical coordinate dynamics.
         :param dt: The amount of time passed
         :return: None
         """
-        self.__position.x += self.__velocity.x * dt
-        self.__position.y += self.__velocity.y * dt
-        self.__age += dt
-    def distance_from(self, other: "Mass") -> float:
+        # Update spherical coordinates directly
+        self.position.r += self._velocity.v_r * dt
+        self.position.theta += self._velocity.v_theta * dt
+        self.position.phi += self._velocity.v_phi * dt
+        self._age += dt
+
+    def distance_from(self, other: "_Element") -> float:
         """
-        Calculate the distance from this Mass to another Mass.
-        :param other: The other Mass object
-        :return: The distance between the two Mass objects
+        Calculate the distance from this Element to another Element.
+        Uses spherical coordinate distance formula.
+        :param other: The other Element object
+        :return: The distance between the two Element objects
         """
-        dx = self.x - other.x
-        dy = self.y - other.y
-        return (dx**2 + dy**2) ** 0.5
+        return self.position.distance_to(other.position)
 
     @property
     def x(self) -> float:
         """
-        :return: The Mass's x position
+        :return: The Element's x position (Cartesian)
         """
-        return self.__position.x
+        return self.position.x
 
     @property
     def y(self) -> float:
         """
-        :return: the Mass's y position
+        :return: The Element's y position (Cartesian)
         """
-        return self.__position.y
+        return self.position.y
 
     @property
-    def velocity(self) -> vector.VectorObject2D:
+    def z(self) -> float:
         """
-        :return: The Mass's velocity
+        :return: The Element's z position (Cartesian)
         """
-        return self.__velocity
+        return self.position.z
+
+    @property
+    def velocity(self) -> SphericalVelocity:
+        """
+        :return: The Element's velocity in spherical coordinates
+        """
+        return self._velocity
+
+    @velocity.setter
+    def velocity(self, value: SphericalVelocity):
+        """
+        Set the Element's velocity
+        :param value: The new velocity (SphericalVelocity)
+        """
+        self._velocity = value
+
+    @property
+    def speed(self) -> float:
+        """
+        :return: The Element's speed (magnitude of velocity)
+        """
+        return self._velocity.magnitude(self.position)
 
     @property
     def age(self) -> float:
-        return self.__age
+        return self._age
